@@ -1,9 +1,14 @@
 package core
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type RobotPlugin interface {
-	PerformAction()
+	Initialize() error
+	PerformAction(ctx context.Context) error
+	ReportResults() string
 }
 
 type Robot struct {
@@ -14,10 +19,24 @@ func (rc *Robot) AddPlugin(p RobotPlugin) {
 	rc.plugins = append(rc.plugins, p)
 }
 
+// Execute runs the robot core and all attached plugins
 func (rc *Robot) Execute() {
 	fmt.Println("Executing Robot Core")
 
 	for _, plugin := range rc.plugins {
-		plugin.PerformAction()
+		if err := plugin.Initialize(); err != nil {
+			fmt.Printf("Error initializing plugin: %v\n", err)
+			continue
+		}
+
+		ctx := context.Background() // Use a context for passing shared data or services
+
+		if err := plugin.PerformAction(ctx); err != nil {
+			fmt.Printf("Error executing plugin: %v\n", err)
+			continue
+		}
+
+		results := plugin.ReportResults()
+		fmt.Printf("Plugin Results: %s\n", results)
 	}
 }

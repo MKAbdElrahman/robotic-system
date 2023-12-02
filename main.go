@@ -10,8 +10,8 @@ func main() {
 	robot := core.Robot{}
 
 	// Register and add plugins to the robot core
-	motionControl := plugin.MotionControl{}
-	sensorIntegration := plugin.MotionControl{}
+	motionControl := &plugin.MotionControl{}
+	sensorIntegration := &plugin.MotionControl{}
 
 	robot.AddPlugin(motionControl)
 	robot.AddPlugin(sensorIntegration)
