@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"sync"
 )
 
 type RobotPlugin interface {
@@ -19,24 +20,33 @@ func (rc *Robot) AddPlugin(p RobotPlugin) {
 	rc.plugins = append(rc.plugins, p)
 }
 
-// Execute runs the robot core and all attached plugins
+// Execute runs the robot core and all attached plugins concurrently
 func (rc *Robot) Execute() {
 	fmt.Println("Executing Robot Core")
 
+	var wg sync.WaitGroup
+	wg.Add(len(rc.plugins))
+
 	for _, plugin := range rc.plugins {
-		if err := plugin.Initialize(); err != nil {
-			fmt.Printf("Error initializing plugin: %v\n", err)
-			continue
-		}
+		go func(p RobotPlugin) {
+			defer wg.Done()
 
-		ctx := context.Background() // Use a context for passing shared data or services
+			if err := p.Initialize(); err != nil {
+				fmt.Printf("Error initializing plugin: %v\n", err)
+				return
+			}
 
-		if err := plugin.PerformAction(ctx); err != nil {
-			fmt.Printf("Error executing plugin: %v\n", err)
-			continue
-		}
+			ctx := context.Background() // Use a context for passing shared data or services
 
-		results := plugin.ReportResults()
-		fmt.Printf("Plugin Results: %s\n", results)
+			if err := p.PerformAction(ctx); err != nil {
+				fmt.Printf("Error executing plugin: %v\n", err)
+				return
+			}
+
+			results := p.ReportResults()
+			fmt.Printf("Plugin Results: %s\n", results)
+		}(plugin)
 	}
+
+	wg.Wait()
 }

@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 type MotionControl struct {
@@ -17,6 +18,20 @@ func (mcp *MotionControl) Initialize() error {
 // PerformAction performs the motion control action
 func (mcp *MotionControl) PerformAction(ctx context.Context) error {
 	fmt.Println("Executing Motion Control Plugin Action")
+
+	// Simulate some work with progress
+	for i := 1; i <= 5; i++ {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Motion Control Plugin Action canceled")
+			return ctx.Err()
+		default:
+			time.Sleep(500 * time.Millisecond)
+			fmt.Printf("Motion Control Plugin Action in progress: %d/5\n", i)
+		}
+	}
+
+	fmt.Println("Motion Control Plugin Action completed")
 	return nil
 }
 

@@ -11,7 +11,7 @@ func main() {
 
 	// Register and add plugins to the robot core
 	motionControl := &plugin.MotionControl{}
-	sensorIntegration := &plugin.MotionControl{}
+	sensorIntegration := &plugin.SensorIntegration{}
 
 	robot.AddPlugin(motionControl)
 	robot.AddPlugin(sensorIntegration)
